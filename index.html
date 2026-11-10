@@ -83,8 +83,10 @@ body.has-sample .nav{top:27px}
 .poster .k{font-weight:600;font-size:3.6cqw;letter-spacing:.3em;margin-left:.3em;text-transform:uppercase;color:var(--gold);min-height:1.4em}
 .poster .k .caret{display:inline-block;width:.08em;height:1em;background:var(--gold);vertical-align:-.12em;margin-left:.1em;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-.poster .ph{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;line-height:.9;margin-top:1.3cqw;background:linear-gradient(to bottom,#fff 0%,#fff 50%,#ffe0a3 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 2.2cqw rgba(255,170,70,.35)) drop-shadow(0 1cqw 3cqw rgba(0,0,0,.5))}
-.poster .ph span{display:block;opacity:0;transform:translateY(4cqw);animation:rise 1s var(--ease) forwards}
+.poster .ph{font-family:Anton,Impact,sans-serif;font-weight:400;text-transform:uppercase;line-height:.9;margin-top:1.3cqw;color:#fff;filter:drop-shadow(0 0 2.2cqw rgba(255,170,70,.35)) drop-shadow(0 1cqw 3cqw rgba(0,0,0,.5))}
+/* gradient lives on each animated line (Safari can't paint a parent's text-clip into transformed children) */
+.poster .ph span{display:block;opacity:0;transform:translateY(4cqw);animation:rise 1s var(--ease) forwards;color:#fff;background:linear-gradient(to bottom,#fff 0%,#fff 50%,#ffe0a3 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){.poster .ph span{background:none;-webkit-text-fill-color:#fff}}
 .poster .ph .a{font-size:21.85cqw;letter-spacing:.02em;animation-delay:1.25s}
 .poster .ph .b{font-size:20.55cqw;animation-delay:1.45s}
 @keyframes rise{to{opacity:1;transform:none}}
