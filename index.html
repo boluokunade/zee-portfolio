@@ -515,7 +515,7 @@ footer a{color:var(--text)}
   <div class="rv">
     <div class="eyebrow">Get the details</div>
     <h2>Before they're <em class="glow">all gone.</em></h2>
-    <p class="lead">Leave your details and we'll message you on WhatsApp with the full portfolio pack: what's still available, prices, occupancy history and how buying from abroad works.</p>
+    <p class="lead">Leave your details and we'll message you on WhatsApp to get you started: what's still available, prices, occupancy history and how buying from abroad works.</p>
   </div>
   <div class="formbox rv" id="formbox">
     <form class="f" id="lead" novalidate>
@@ -532,11 +532,11 @@ footer a{color:var(--text)}
       <label class="consent"><input type="checkbox" name="consent" required>I agree that Zee Realty can contact me by WhatsApp, phone or email about the Curated Shortlet Portfolio. I can ask them to stop at any time.</label>
       <input type="hidden" name="source">
       <input type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-      <button class="btn btn-gold" type="submit">Send me the portfolio pack</button>
+      <button class="btn btn-gold js-start-submit" type="submit">Get started</button>
       <div class="or">or</div>
-      <a class="btn btn-ghost js-wa" href="#" data-msg="Hi Zee Realty, I saw your Detty December ad. Please send me the Curated Shortlet Portfolio.">Chat on WhatsApp now</a>
+      <a class="btn btn-ghost js-wa" href="#" data-msg="Hi Zee Realty, I saw your Detty December ad. I'd like to get started with the Curated Shortlet Portfolio.">Chat on WhatsApp now</a>
     </form>
-    <div class="done"><h3 class="glow">Got it.</h3><p>Thank you. We'll message you on WhatsApp with the portfolio pack shortly.</p><a class="btn btn-wa" id="doneWa" href="#" target="_blank" rel="noopener" style="margin-top:18px">Continue on WhatsApp now</a></div>
+    <div class="done"><h3 class="glow">Got it.</h3><p>Thank you. We'll message you on WhatsApp shortly to get you started.</p><a class="btn btn-wa" id="doneWa" href="#" target="_blank" rel="noopener" style="margin-top:18px">Continue on WhatsApp now</a></div>
   </div>
 </div></section>
 
@@ -570,7 +570,7 @@ footer a{color:var(--text)}
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path class="wa-ico"/></svg>Chat on WhatsApp</a>
 </div>
 <nav class="dock" id="dock" aria-label="Sections">
-  <a href="#why">Why it works</a><a href="#map">Locations</a><a href="#portfolio">Portfolio</a><a href="#occupancy">Occupancy</a><a href="#faq">FAQ</a><a href="#details" class="cta">Get the pack</a>
+  <a href="#why">Why it works</a><a href="#map">Locations</a><a href="#portfolio">Portfolio</a><a href="#occupancy">Occupancy</a><a href="#faq">FAQ</a><a href="#details" class="cta js-start">Get started</a>
 </nav>
 
 <div class="ck" id="ck" role="region" aria-label="Cookie choice" hidden>
@@ -579,64 +579,93 @@ footer a{color:var(--text)}
 </div>
 
 <script>
-/* ================= TRACKING: loads only after a visitor taps Accept =================
-   Meta events: PageView, ViewContent (portfolio seen), Contact (WhatsApp tap), Lead (form sent).
-   GA4 events: page_view, view_portfolio, whatsapp_click, generate_lead.
+/* ================= TRACKING (rebuilt 2026-11-15) =================
+   Google tag (GA4) and the Meta pixel load on EVERY visit.
+   - Visitors in the UK, EU, EEA and Switzerland: Google Consent Mode v2 starts "denied" (cookieless pings only,
+     so Google can still model conversions) and Meta consent is revoked until they tap Accept.
+   - Everyone else: tracking is on by default; "No thanks" in the cookie bar turns it off.
+   Events (same names on both platforms):
+     page visit       GA4 page_view            | Meta PageView
+     portfolio seen   GA4 view_portfolio       | Meta ViewContent
+     Get started tap  GA4 get_started_click    | Meta custom GetStarted
+     WhatsApp tap     GA4 whatsapp_click       | Meta Contact
+     form sent        GA4 generate_lead        | Meta Lead
    Names, numbers and emails are never sent. autoConfig is off so Meta cannot read the form.
    On any host but the live one, events only go to the console, so testing can't pollute the data. */
 var META_PIXEL_ID = "2054364772104868";   // Zee's "shortlet" pixel (ad account 447676694667122), same as www.zeerealtyhq.com
-var GA4_ID = "G-0EFHXTFFYQ";              // Zee Realty Websites, on zeerealtyhq@gmail.com
+var GA4_ID = "G-0EFHXTFFYQ";              // Zee Realty Websites, linked to Google Ads "zee realty" 572-974-8817
 var LIVE_HOST = "own.zeerealtyhq.com";
 (function(){
-  var KEY = "zee-cookie-choice", on = false, live = location.hostname === LIVE_HOST;
-  var src = new URLSearchParams(location.search).get("src") || new URLSearchParams(location.search).get("utm_source") || "direct";
+  var KEY = "zee-cookie-choice", live = location.hostname === LIVE_HOST;
+  var qs = new URLSearchParams(location.search);
+  var src = qs.get("src") || qs.get("utm_source") || "direct";
+  var EEA = ["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","IS","LI","NO","GB","CH"];
+  var tz = ""; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch(e){}
+  var needsConsent = /^Europe\//.test(tz) || tz === "Atlantic/Reykjavik" || tz === "Atlantic/Canary" || tz === "Atlantic/Madeira" || tz === "Atlantic/Azores";
   var EVENTS = {
-    view_portfolio: ["ViewContent"], whatsapp_click: ["Contact"], generate_lead: ["Lead"]
+    view_portfolio: ["ViewContent"], whatsapp_click: ["Contact"], generate_lead: ["Lead"], get_started_click: ["GetStarted", true]
   };
   function read(){ try { return localStorage.getItem(KEY); } catch(e){ return null; } }
   function save(v){ try { localStorage.setItem(KEY, v); } catch(e){} }
   function load(url){ var s = document.createElement("script"); s.async = true; s.src = url; document.head.appendChild(s); }
-  function start(){
-    if (on) return; on = true;
-    if (!live){ console.log("[track] consent given, test host: not loading tags"); return; }
-    if (META_PIXEL_ID){
-      var f = window.fbq = function(){ f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); };
-      if (!window._fbq) window._fbq = f; f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
-      load("https://connect.facebook.net/en_US/fbevents.js");
-      fbq("set", "autoConfig", false, META_PIXEL_ID);
-      fbq("init", META_PIXEL_ID);
-      fbq("track", "PageView");
-    }
-    if (GA4_ID){
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function(){ dataLayer.push(arguments); };
-      load("https://www.googletagmanager.com/gtag/js?id=" + GA4_ID);
-      gtag("js", new Date());
-      gtag("config", GA4_ID, {source_ref: src});
-    }
+  var choice = read();
+  var allowed = choice === "yes" || (choice !== "no" && !needsConsent);
+  var G = {ad_storage:"granted", ad_user_data:"granted", ad_personalization:"granted", analytics_storage:"granted"};
+  var D = {ad_storage:"denied", ad_user_data:"denied", ad_personalization:"denied", analytics_storage:"denied"};
+
+  /* ---- Google tag with Consent Mode v2 ---- */
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); };
+  gtag("consent", "default", Object.assign({}, D, {region: EEA, wait_for_update: 500}));
+  gtag("consent", "default", G);
+  if (choice === "no") gtag("consent", "update", D);
+  else if (choice === "yes") gtag("consent", "update", G);
+  gtag("set", "url_passthrough", true);
+  gtag("set", "ads_data_redaction", !allowed);
+  if (live){
+    load("https://www.googletagmanager.com/gtag/js?id=" + GA4_ID);
+    gtag("js", new Date());
+    gtag("config", GA4_ID, {source_ref: src});
+  } else console.log("[track] test host: Google tag not loaded | consent:", allowed ? "granted" : "denied", "| tz:", tz);
+
+  /* ---- Meta pixel with consent ---- */
+  if (live && META_PIXEL_ID){
+    var f = window.fbq = function(){ f.callMethod ? f.callMethod.apply(f, arguments) : f.queue.push(arguments); };
+    if (!window._fbq) window._fbq = f; f.push = f; f.loaded = true; f.version = "2.0"; f.queue = [];
+    load("https://connect.facebook.net/en_US/fbevents.js");
+    fbq("consent", allowed ? "grant" : "revoke");
+    fbq("set", "autoConfig", false, META_PIXEL_ID);
+    fbq("init", META_PIXEL_ID);
+    fbq("track", "PageView", {source_ref: src});
   }
+
   window.zeeTrack = function(name){
-    if (!on) return;
-    var meta = EVENTS[name] && EVENTS[name][0];
-    if (!live){ console.log("[track]", name, "| meta:", meta, "| src:", src); return; }
-    if (window.fbq && meta) fbq("track", meta, {content_name: "Curated Shortlet Portfolio", source_ref: src});
+    var m = EVENTS[name], meta = m && m[0], custom = m && m[1];
+    if (!live){ console.log("[track]", name, "| meta:", meta, "| src:", src, "| consent:", allowed); return; }
+    if (window.fbq && meta) fbq(custom ? "trackCustom" : "track", meta, {content_name: "Curated Shortlet Portfolio", source_ref: src});
     if (window.gtag) gtag("event", name, {source_ref: src});
   };
+  function setChoice(v){
+    save(v); allowed = v === "yes";
+    gtag("consent", "update", allowed ? G : D);
+    gtag("set", "ads_data_redaction", !allowed);
+    if (window.fbq) fbq("consent", allowed ? "grant" : "revoke");
+  }
   document.addEventListener("click", function(e){
-    var a = e.target.closest && e.target.closest('a[href*="wa.me"]');
-    if (a) zeeTrack("whatsapp_click");
+    if (!e.target.closest) return;
+    if (e.target.closest('a[href*="wa.me"]')) zeeTrack("whatsapp_click");
+    else if (e.target.closest('.js-start, a[href="#details"]')) zeeTrack("get_started_click");
   }, true);
   document.addEventListener("DOMContentLoaded", function(){
     var bar = document.getElementById("ck");
-    function choose(v){ save(v); bar.hidden = true; if (v === "yes") start(); else if (on) location.reload(); }
+    function choose(v){ setChoice(v); bar.hidden = true; }
     document.getElementById("ckYes").onclick = function(){ choose("yes"); };
     document.getElementById("ckNo").onclick = function(){ choose("no"); };
     document.getElementById("ckOpen").onclick = function(){ bar.hidden = false; };
-    var c = read();
-    if (c === "yes") start(); else if (c !== "no") bar.hidden = false;
+    if (choice === null) bar.hidden = false;
     var seen = false, sec = document.getElementById("portfolio");
     if (sec && "IntersectionObserver" in window) new IntersectionObserver(function(en, io){
-      if (en[0].isIntersecting && on && !seen){ seen = true; zeeTrack("view_portfolio"); io.disconnect(); }
+      if (en[0].isIntersecting && !seen){ seen = true; zeeTrack("view_portfolio"); io.disconnect(); }
     }, {threshold: .2}).observe(sec);
   });
 })();
